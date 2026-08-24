@@ -1,0 +1,298 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model admin {
+  admin_id       Int       @id @default(autoincrement())
+  admin_username String    @unique
+  admin_password String
+  last_logged_in DateTime?
+  created_at     DateTime  @default(now())
+}
+
+model complaint {
+  complaint_id    Int       @id @default(autoincrement())
+  customer_id     Int
+  description     String
+  date_submitted  DateTime  @default(now())
+  resolution_note String?
+  resolved_date   DateTime?
+  is_resolved     Boolean   @default(false)
+  customer        customer  @relation(fields: [customer_id], references: [customer_id])
+}
+
+model customer {
+  customer_id         Int                  @id @default(autoincrement())
+  fname               String
+  lname               String
+  phone_number        String
+  latitude            Decimal?
+  longitude           Decimal?
+  address_line_1      String?
+  address_line_2      String?
+  is_active           Boolean              @default(true)
+  is_deleted          Boolean              @default(false)
+  delete_timestamp    DateTime?
+  registration_date   DateTime             @default(now())
+  complaint           complaint[]
+  customer_credential customer_credential?
+  customer_order      customer_order[]
+  subscription        subscription[]
+}
+
+model customer_credential {
+  customer_credential_id Int      @id @default(autoincrement())
+  customer_id            Int      @unique
+  email                  String
+  customer_password      String
+  customer               customer @relation(fields: [customer_id], references: [customer_id])
+}
+
+model customer_order {
+  order_id                Int                 @id @default(autoincrement())
+  customer_id             Int
+  meal_id                 Int
+  order_timestamp         DateTime            @default(now())
+  delivery_person_id      Int?
+  order_status            String
+  payment_status          String
+  delivery_status         String
+  delivery_preferred_date DateTime
+  is_a_subscribed_meal    Boolean             @default(false)
+  offer_id                Int?
+  customer                customer            @relation(fields: [customer_id], references: [customer_id])
+  delivery_person         delivery_person?    @relation(fields: [delivery_person_id], references: [delivery_person_id])
+  meal_plan               meal_plan           @relation(fields: [meal_id], references: [meal_id])
+  offer                   offer?              @relation(fields: [offer_id], references: [offer_id])
+  delivery_feedback       delivery_feedback[]
+}
+
+model delivery_feedback {
+  feedback_id    Int            @id @default(autoincrement())
+  order_id       Int
+  rating_value   Int
+  description    String?
+  image_path     String?
+  reply          String?
+  replied_date   DateTime?
+  customer_order customer_order @relation(fields: [order_id], references: [order_id])
+}
+
+model delivery_person {
+  delivery_person_id Int              @id @default(autoincrement())
+  rider_name         String
+  phone_number       String
+  customer_order     customer_order[]
+}
+
+model food_item {
+  food_item_id        Int                   @id @default(autoincrement())
+  item_name           String
+  ingredient_list     String
+  image_path          String?
+  is_available        Boolean               @default(true)
+  price               Decimal
+  meal_plan_food_item meal_plan_food_item[]
+}
+
+model inventory_item {
+  inventory_id            Int                       @id @default(autoincrement())
+  ingredient_name         String
+  category                String
+  unit                    String
+  current_quantity        Int
+  normal_stock_level      Int
+  low_stock_level         Int
+  is_out_of_stock         Boolean                   @default(false)
+  expiry_date             DateTime?
+  unit_price              Decimal
+  updated_timestamp       DateTime
+  stock_adjustment        stock_adjustment[]
+  supplier_inventory_item supplier_inventory_item[]
+  supplier_request        supplier_request[]
+}
+
+model meal_plan {
+  meal_id             Int                   @id @default(autoincrement())
+  item_name           String
+  category            String
+  description         String
+  dietary_preference  String
+  price               Decimal
+  image_path          String?
+  is_available        Boolean               @default(true)
+  customer_order      customer_order[]
+  meal_plan_food_item meal_plan_food_item[]
+  subscription        subscription[]
+}
+
+model meal_plan_food_item {
+  meal_id      Int
+  food_item_id Int
+  day          String
+  meal_type    String
+  food_item    food_item @relation(fields: [food_item_id], references: [food_item_id])
+  meal_plan    meal_plan @relation(fields: [meal_id], references: [meal_id])
+
+  @@id([meal_id, food_item_id, day, meal_type])
+}
+
+model offer {
+  offer_id        Int              @id @default(autoincrement())
+  coupon_number   String           @unique
+  expiry_date     DateTime
+  usage_limit     Int
+  min_order_value Decimal
+  title           String
+  description     String
+  amount          Decimal
+  is_enabled      Boolean          @default(true)
+  customer_order  customer_order[]
+}
+
+model password_reset_otp {
+  id        Int      @id @default(autoincrement())
+  email     String
+  otp       String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+model permission {
+  permission_id   Int               @id @default(autoincrement())
+  permission_type String
+  role_permission role_permission[]
+}
+
+model purchase_order {
+  po_id       Int      @id @default(autoincrement())
+  supplier_id Int
+  item_count  Int
+  date        DateTime @default(now())
+  status      String
+  supplier    supplier @relation(fields: [supplier_id], references: [supplier_id])
+}
+
+model role {
+  role_id         Int               @id @default(autoincrement())
+  role            String
+  description     String
+  role_permission role_permission[]
+  staff_role      staff_role[]
+}
+
+model role_permission {
+  role_id       Int
+  permission_id Int
+  permission    permission @relation(fields: [permission_id], references: [permission_id])
+  role          role       @relation(fields: [role_id], references: [role_id], onDelete: Cascade)
+
+  @@id([role_id, permission_id])
+}
+
+model setting {
+  setting_id      Int     @id @default(autoincrement())
+  delivery_radius Int
+  latitude        Decimal
+  longitude       Decimal
+  delivery_fee    Decimal
+}
+
+model staff {
+  staff_id         Int                @id @default(autoincrement())
+  fname            String
+  lname            String
+  phone_number     String
+  status           String
+  staff_credential staff_credential?
+  staff_role       staff_role[]
+  stock_adjustment stock_adjustment[]
+  supplier_request supplier_request[]
+}
+
+model staff_credential {
+  staff_credential_id Int    @id @default(autoincrement())
+  staff_id            Int    @unique
+  email               String @unique
+  staff_password      String
+  token_version       Int    @default(0)
+  staff               staff  @relation(fields: [staff_id], references: [staff_id], onDelete: Cascade)
+}
+
+model staff_role {
+  staff_id Int
+  role_id  Int
+  role     role  @relation(fields: [role_id], references: [role_id], onDelete: Cascade)
+  staff    staff @relation(fields: [staff_id], references: [staff_id], onDelete: Cascade)
+
+  @@id([staff_id, role_id])
+}
+
+model stock_adjustment {
+  stock_adjust_id Int            @id @default(autoincrement())
+  inventory_id    Int
+  staff_id        Int
+  adjustment_type String
+  quantity        Int
+  batch_number    String?
+  expiry_date     DateTime?
+  entered_date    DateTime       @default(now())
+  remarks         String?
+  inventory_item  inventory_item @relation(fields: [inventory_id], references: [inventory_id])
+  staff           staff          @relation(fields: [staff_id], references: [staff_id])
+}
+
+model subscription {
+  subscription_id         Int       @id @default(autoincrement())
+  customer_id             Int
+  meal_id                 Int
+  subscribe_date          DateTime  @default(now())
+  canceled_date           DateTime?
+  delivery_preferred_date DateTime
+  customer                customer  @relation(fields: [customer_id], references: [customer_id])
+  meal_plan               meal_plan @relation(fields: [meal_id], references: [meal_id])
+}
+
+model supplier {
+  supplier_id             Int                       @id @default(autoincrement())
+  name                    String
+  agent_name              String
+  email                   String
+  phone_number            String
+  address_line_1          String?
+  address_line_2          String?
+  address_line_3          String?
+  purchase_order          purchase_order[]
+  supplier_inventory_item supplier_inventory_item[]
+  supplier_request        supplier_request[]
+}
+
+model supplier_inventory_item {
+  supplier_id    Int
+  inventory_id   Int
+  is_available   Boolean        @default(true)
+  inventory_item inventory_item @relation(fields: [inventory_id], references: [inventory_id])
+  supplier       supplier       @relation(fields: [supplier_id], references: [supplier_id])
+
+  @@id([supplier_id, inventory_id])
+}
+
+model supplier_request {
+  supplier_req_id Int            @id @default(autoincrement())
+  supplier_id     Int
+  inventory_id    Int
+  quantity        Int
+  requested_date  DateTime       @default(now())
+  required_date   DateTime
+  status          String
+  remarks         String?
+  staff_id        Int
+  inventory_item  inventory_item @relation(fields: [inventory_id], references: [inventory_id])
+  staff           staff          @relation(fields: [staff_id], references: [staff_id])
+  supplier        supplier       @relation(fields: [supplier_id], references: [supplier_id])
+}
