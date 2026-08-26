@@ -49,8 +49,9 @@ model customer {
 model customer_credential {
   customer_credential_id Int      @id @default(autoincrement())
   customer_id            Int      @unique
-  email                  String
+  email                  String   @unique
   customer_password      String
+  token_version          Int      @default(0)
   customer               customer @relation(fields: [customer_id], references: [customer_id])
 }
 
