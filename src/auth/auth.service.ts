@@ -16,6 +16,7 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 
 const OTP_EXPIRY_MINUTES = 5;
 const GENERIC_FORGOT_RESPONSE = {
@@ -221,5 +222,58 @@ export class AuthService {
     }
 
     return { message: 'Password has been reset successfully' };
+  }
+
+  async changePassword(customerId: number, dto: ChangePasswordDto) {
+    const credential = await this.prisma.customer_credential.findUnique({
+      where: { customer_id: customerId },
+    });
+
+    if (!credential) {
+      throw new NotFoundException('Customer not found');
+    }
+
+    const currentValid = await bcrypt.compare(
+      dto.current_password,
+      credential.customer_password,
+    );
+    if (!currentValid) {
+      throw new UnauthorizedException('Current password is incorrect');
+    }
+
+    const hashedPassword = await bcrypt.hash(dto.new_password, 10);
+
+    try {
+      const updated = await this.prisma.customer_credential.update({
+        where: { customer_id: customerId },
+        data: {
+          customer_password: hashedPassword,
+          token_version: { increment: 1 },
+        },
+        select: { token_version: true },
+      });
+
+      const access_token = await this.jwtService.signAsync({
+        customer_id: customerId,
+        token_version: updated.token_version,
+      });
+
+      return {
+        access_token,
+        message: 'Password changed successfully',
+      };
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === 'P2025') {
+          throw new NotFoundException('Customer not found');
+        }
+        throw new BadRequestException(
+          `Failed to change password: ${error.message}`,
+        );
+      }
+      throw new InternalServerErrorException(
+        'Failed to change password: An unexpected error occurred',
+      );
+    }
   }
 }
