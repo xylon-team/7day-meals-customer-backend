@@ -34,6 +34,10 @@ export class CustomerOrderController {
     @Param('orderId') orderId: string,
     @Body() updateOrderDto: UpdateOrderDto,
   ) {
-    return this.customerOrderService.updateByUser(userId, orderId, updateOrderDto);
+    return this.customerOrderService.updateByUser(
+      userId,
+      orderId,
+      updateOrderDto,
+    );
   }
 }
