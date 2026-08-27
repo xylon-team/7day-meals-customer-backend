@@ -31,6 +31,24 @@
 $ npm install
 ```
 
+### Environment variables
+
+Create a `.env` file in the project root with the following variables:
+
+| Variable        | Description                                                        |
+| --------------- | ------------------------------------------------------------------ |
+| `DATABASE_URL`  | PostgreSQL connection string used by Prisma.                       |
+| `JWT_SECRET`    | Secret used to sign JWT access tokens.                             |
+| `JWT_EXPIRES_IN`| JWT lifetime (e.g. `15m`). Defaults to `15m`.                      |
+| `PORT`          | HTTP port the app listens on. Defaults to `3000`.                  |
+| `SMTP_HOST`     | SMTP server hostname (e.g. `smtp.mailtrap.io` or `smtp.gmail.com`).|
+| `SMTP_PORT`     | SMTP port. Use `465` for TLS, `587` for STARTTLS.                  |
+| `SMTP_USER`     | SMTP username. Omit for unauthenticated relays.                    |
+| `SMTP_PASS`     | SMTP password. Omit for unauthenticated relays.                    |
+| `SMTP_FROM`     | From address for outgoing emails. Defaults to `no-reply@7day-meals.com`. |
+
+For local development, [Mailtrap](https://mailtrap.io) is a convenient way to capture reset emails without sending real mail.
+
 ## Compile and run the project
 
 ```bash

@@ -19,7 +19,10 @@ async function main() {
 
     // 3. Query an introspected model
     const customers = await prisma.customer.findMany({ take: 1 });
-    console.log('✓ Model query works — customer sample count:', customers.length);
+    console.log(
+      '✓ Model query works — customer sample count:',
+      customers.length,
+    );
   } catch (err) {
     console.error('✗ Database connection test failed:', err);
     process.exitCode = 1;
