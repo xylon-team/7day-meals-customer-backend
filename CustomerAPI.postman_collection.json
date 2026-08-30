@@ -103,6 +103,110 @@
           "response": []
         }
       ]
+    },
+    {
+      "name": "Meal Plans",
+      "item": [
+        {
+          "name": "Get Available Meal Plans",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/meals",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "meals"
+              ]
+            },
+            "description": "Retrieve all available meal plans"
+          },
+          "response": []
+        },
+        {
+          "name": "Search Available Meal Plans",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/meals/search?search=vegetarian",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "meals",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "vegetarian"
+                }
+              ]
+            },
+            "description": "Search available meal plans by name or description"
+          },
+          "response": []
+        },
+        {
+          "name": "Filter Available Meal Plans",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/meals/filter?category=Lunch&dietary_preference=Vegetarian&min_price=500&max_price=1500",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "meals",
+                "filter"
+              ],
+              "query": [
+                {
+                  "key": "category",
+                  "value": "Lunch"
+                },
+                {
+                  "key": "dietary_preference",
+                  "value": "Vegetarian"
+                },
+                {
+                  "key": "min_price",
+                  "value": "500"
+                },
+                {
+                  "key": "max_price",
+                  "value": "1500"
+                }
+              ]
+            },
+            "description": "Filter available meal plans by category, dietary preference, and price range"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Available Meal Plan Details",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/meals/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "meals",
+                "1"
+              ]
+            },
+            "description": "Retrieve a single available meal plan with included food items"
+          },
+          "response": []
+        }
+      ]
     }
   ],
   "variable": [
