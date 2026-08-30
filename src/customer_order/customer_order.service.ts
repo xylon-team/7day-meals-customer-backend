@@ -2,7 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
-import { ConflictException, BadRequestException, NotFoundException, InternalServerErrorException } from '@nestjs/common';
+import {
+  ConflictException,
+  BadRequestException,
+  NotFoundException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 
 @Injectable()
@@ -20,17 +25,23 @@ export class CustomerOrderService {
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
-          throw new ConflictException('Order already exists with the provided details');
+          throw new ConflictException(
+            'Order already exists with the provided details',
+          );
         }
         if (error.code === 'P2003') {
-          throw new BadRequestException('Invalid customer ID or related entity not found');
+          throw new BadRequestException(
+            'Invalid customer ID or related entity not found',
+          );
         }
         if (error.code === 'P2025') {
           throw new NotFoundException('Related record not found');
         }
         throw new BadRequestException(`Invalid order data: ${error.message}`);
       }
-      throw new InternalServerErrorException('Failed to create order: An unexpected error occurred');
+      throw new InternalServerErrorException(
+        'Failed to create order: An unexpected error occurred',
+      );
     }
   }
 
@@ -44,9 +55,13 @@ export class CustomerOrderService {
       return orders;
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        throw new BadRequestException(`Failed to fetch orders: ${error.message}`);
+        throw new BadRequestException(
+          `Failed to fetch orders: ${error.message}`,
+        );
       }
-      throw new InternalServerErrorException('Failed to fetch orders: An unexpected error occurred');
+      throw new InternalServerErrorException(
+        'Failed to fetch orders: An unexpected error occurred',
+      );
     }
   }
 
@@ -67,13 +82,21 @@ export class CustomerOrderService {
         throw error;
       }
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        throw new BadRequestException(`Failed to fetch order: ${error.message}`);
+        throw new BadRequestException(
+          `Failed to fetch order: ${error.message}`,
+        );
       }
-      throw new InternalServerErrorException('Failed to fetch order: An unexpected error occurred');
+      throw new InternalServerErrorException(
+        'Failed to fetch order: An unexpected error occurred',
+      );
     }
   }
 
-  async updateByUser(userId: string, orderId: string, updateOrderDto: UpdateOrderDto) {
+  async updateByUser(
+    userId: string,
+    orderId: string,
+    updateOrderDto: UpdateOrderDto,
+  ) {
     try {
       const result = await this.prisma.customer_order.updateMany({
         where: {
@@ -83,7 +106,9 @@ export class CustomerOrderService {
         data: updateOrderDto,
       });
       if (result.count === 0) {
-        throw new NotFoundException('Order not found or you do not have permission to update it');
+        throw new NotFoundException(
+          'Order not found or you do not have permission to update it',
+        );
       }
       return await this.prisma.customer_order.findFirst({
         where: {
@@ -97,14 +122,22 @@ export class CustomerOrderService {
       }
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
-          throw new ConflictException('Order update conflicts with existing data');
+          throw new ConflictException(
+            'Order update conflicts with existing data',
+          );
         }
         if (error.code === 'P2003') {
-          throw new BadRequestException('Invalid reference: related entity not found');
+          throw new BadRequestException(
+            'Invalid reference: related entity not found',
+          );
         }
-        throw new BadRequestException(`Failed to update order: ${error.message}`);
+        throw new BadRequestException(
+          `Failed to update order: ${error.message}`,
+        );
       }
-      throw new InternalServerErrorException('Failed to update order: An unexpected error occurred');
+      throw new InternalServerErrorException(
+        'Failed to update order: An unexpected error occurred',
+      );
     }
   }
 }
