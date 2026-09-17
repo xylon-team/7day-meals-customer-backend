@@ -53,21 +53,13 @@ Parameters are labeled by location:
 }
 ```
 
-### Update Order Request
+### Update Preferred Delivery Date Request
 
-All fields are optional. At least one field must be provided.
+The customer can update only the preferred delivery date for an existing order.
 
 ```json
 {
-  "customer_id": number (optional),
-  "meal_id": number (optional),
-  "order_status": string (optional),
-  "payment_status": string (optional),
-  "delivery_status": string (optional),
-  "delivery_preferred_date": string (ISO 8601 datetime, optional),
-  "is_a_subscribed_meal": boolean (optional),
-  "delivery_person_id": number (optional),
-  "offer_id": number (optional)
+  "delivery_preferred_date": string (ISO 8601 datetime)
 }
 ```
 
@@ -78,7 +70,7 @@ All fields are optional. At least one field must be provided.
 - [1. Create an order](#1-create-an-order)
 - [2. List all orders for a customer](#2-list-all-orders-for-a-customer)
 - [3. Get an order by ID](#3-get-an-order-by-id)
-- [4. Update an order](#4-update-an-order)
+- [4. Update preferred delivery date](#4-update-preferred-delivery-date)
 
 ---
 
@@ -206,11 +198,11 @@ All fields are optional. At least one field must be provided.
 
 ---
 
-### 4. Update an order
+### 4. Update preferred delivery date
 
-**Endpoint:** `PATCH /users/:userId/orders/:orderId`
+**Endpoint:** `PATCH /users/:userId/orders/:orderId/pref-delivery-date`
 
-**Description:** Updates an order belonging to the specified customer. Only the provided fields are updated. The order must belong to the given customer (matched on both `order_id` and `customer_id`).
+**Description:** Updates the preferred delivery date for an order belonging to the authenticated customer. The URL `userId` must match the customer ID in the JWT, and the order must belong to that customer.
 
 **Path Parameters:**
 
@@ -219,22 +211,13 @@ All fields are optional. At least one field must be provided.
 
 **Body Parameters (JSON):**
 
-- `customer_id` (number, optional): The customer's ID.
-- `meal_id` (number, optional): The meal plan ID to order.
-- `order_status` (string, optional): The order status.
-- `payment_status` (string, optional): The payment status.
-- `delivery_status` (string, optional): The delivery status.
-- `delivery_preferred_date` (string, optional): Preferred delivery date (ISO 8601 datetime).
-- `is_a_subscribed_meal` (boolean, optional): Whether this order is for a subscribed meal.
-- `delivery_person_id` (number, optional): The assigned delivery person's ID.
-- `offer_id` (number, optional): The applied offer's ID.
+- `delivery_preferred_date` (string, required): New preferred delivery date in ISO 8601 format.
 
 **Request Body:**
 
 ```json
 {
-  "order_status": "confirmed",
-  "payment_status": "paid"
+  "delivery_preferred_date": "2026-09-03T10:00:00.000Z"
 }
 ```
 
@@ -247,10 +230,10 @@ All fields are optional. At least one field must be provided.
   "meal_id": 1,
   "order_timestamp": "2026-08-27T18:40:00.000Z",
   "delivery_person_id": null,
-  "order_status": "confirmed",
-  "payment_status": "paid",
+  "order_status": "pending",
+  "payment_status": "unpaid",
   "delivery_status": "not_dispatched",
-  "delivery_preferred_date": "2026-09-01T10:00:00.000Z",
+  "delivery_preferred_date": "2026-09-03T10:00:00.000Z",
   "is_a_subscribed_meal": false,
   "offer_id": 5
 }
@@ -260,8 +243,9 @@ All fields are optional. At least one field must be provided.
 
 ## Common Errors
 
-- `400 Bad Request`: Validation errors (missing required fields, invalid types, invalid date format). Also returned when a referenced entity (customer, meal plan, delivery person, or offer) does not exist on create or update.
+- `400 Bad Request`: Validation errors (missing required fields, invalid types, invalid date format). Also returned when a referenced entity (customer, meal plan, delivery person, or offer) does not exist on create.
 - `401 Unauthorized`: Missing or invalid JWT, or when the JWT has been invalidated by a `token_version` bump (after logout, password reset, or password change).
-- `404 Not Found`: Order not found for the given `orderId` and `userId` combination (on get or update), or a related record referenced in create/update does not exist.
+- `403 Forbidden`: The URL `userId` does not match the authenticated customer.
+- `404 Not Found`: Order not found for the given `orderId` and `userId` combination (on get or preferred delivery date update), or a related record referenced in create does not exist.
 - `409 Conflict`: Order creation or update conflicts with existing data (e.g., unique constraint violation).
 - `500 Internal Server Error`: Unexpected database or server failures.
