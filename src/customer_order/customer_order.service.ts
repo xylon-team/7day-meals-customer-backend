@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateOrderDto } from './dto/create-order.dto';
-import { UpdateOrderDto } from './dto/update-order.dto';
+import { UpdatePrefDeliveryDateDto } from './dto/update-pref-delivery-date.dto';
 import {
   ConflictException,
   BadRequestException,
@@ -92,10 +92,10 @@ export class CustomerOrderService {
     }
   }
 
-  async updateByUser(
+  async updatePrefDeliveryDate(
     userId: string,
     orderId: string,
-    updateOrderDto: UpdateOrderDto,
+    updatePrefDeliveryDateDto: UpdatePrefDeliveryDateDto,
   ) {
     try {
       const result = await this.prisma.customer_order.updateMany({
@@ -103,11 +103,15 @@ export class CustomerOrderService {
           order_id: parseInt(orderId),
           customer_id: parseInt(userId),
         },
-        data: updateOrderDto,
+        data: {
+          delivery_preferred_date: new Date(
+            updatePrefDeliveryDateDto.delivery_preferred_date,
+          ),
+        },
       });
       if (result.count === 0) {
         throw new NotFoundException(
-          'Order not found or you do not have permission to update it',
+          'Order not found or you do not have permission to update its preferred delivery date',
         );
       }
       return await this.prisma.customer_order.findFirst({
