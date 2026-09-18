@@ -207,12 +207,140 @@
           "response": []
         }
       ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        {
+          "name": "Create Customer Notification",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"title\": \"Order dispatched\",\n    \"message\": \"Your order #101 is on its way.\",\n    \"type\": \"delivery\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/1/notifications",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "1",
+                "notifications"
+              ]
+            },
+            "description": "Store a new unread notification for a customer. Authentication is not required."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Customer Notifications",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/1/notifications",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "1",
+                "notifications"
+              ]
+            },
+            "description": "Retrieve notifications for a customer, newest first. Authentication is not required."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Notification Read Status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"is_read\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/1/notifications/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "1",
+                "notifications",
+                "1"
+              ]
+            },
+            "description": "Mark a customer's notification as read or unread. Authentication is not required."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Orders",
+      "item": [
+        {
+          "name": "Update Order Status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"order_status\": \"confirmed\",\n    \"payment_status\": \"paid\",\n    \"delivery_status\": \"dispatched\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/1/orders/1/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "1",
+                "orders",
+                "1",
+                "status"
+              ]
+            },
+            "description": "Update one or more order statuses. Requires the authenticated customer to own the order and creates a notification when a status changes."
+          },
+          "response": []
+        }
+      ]
     }
   ],
   "variable": [
     {
       "key": "baseUrl",
       "value": "http://localhost:3000"
+    },
+    {
+      "key": "accessToken",
+      "value": ""
     }
   ]
 }

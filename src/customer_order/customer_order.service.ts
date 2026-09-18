@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdatePrefDeliveryDateDto } from './dto/update-pref-delivery-date.dto';
+import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import {
   ConflictException,
   BadRequestException,
@@ -143,5 +144,114 @@ export class CustomerOrderService {
         'Failed to update order: An unexpected error occurred',
       );
     }
+  }
+
+  // ============= Customer Order Status Update Notification =============
+  async updateStatus(
+    userId: string,
+    orderId: string,
+    updateOrderStatusDto: UpdateOrderStatusDto,
+  ) {
+    const customerId = this.parsePositiveInteger(userId, 'customer ID');
+    const parsedOrderId = this.parsePositiveInteger(orderId, 'order ID');
+
+    if (
+      updateOrderStatusDto.order_status === undefined &&
+      updateOrderStatusDto.payment_status === undefined &&
+      updateOrderStatusDto.delivery_status === undefined
+    ) {
+      throw new BadRequestException(
+        'At least one order status field must be provided',
+      );
+    }
+
+    return this.prisma.$transaction(async (transaction) => {
+      const order = await transaction.customer_order.findFirst({
+        where: {
+          order_id: parsedOrderId,
+          customer_id: customerId,
+        },
+      });
+
+      if (!order) {
+        throw new NotFoundException('Order not found');
+      }
+
+      const changes = this.getStatusChanges(order, updateOrderStatusDto);
+      if (changes.length === 0) {
+        return order;
+      }
+
+      await transaction.customer_order.updateMany({
+        where: {
+          order_id: parsedOrderId,
+          customer_id: customerId,
+        },
+        data: updateOrderStatusDto,
+      });
+
+      // --------------------- Status change notification ------------------
+      await transaction.notification.create({
+        data: {
+          customer_id: customerId,
+          title: 'Order status updated',
+          message: `Order #${parsedOrderId} update: ${changes.join('; ')}.`,
+          type: 'order',
+        },
+      });
+
+      return transaction.customer_order.findFirst({
+        where: {
+          order_id: parsedOrderId,
+          customer_id: customerId,
+        },
+      });
+    });
+  }
+
+  // --------------------- Order status change detection ------------------
+  private getStatusChanges(
+    order: {
+      order_status: string;
+      payment_status: string;
+      delivery_status: string;
+    },
+    updates: UpdateOrderStatusDto,
+  ): string[] {
+    const changes: string[] = [];
+
+    if (
+      updates.order_status !== undefined &&
+      updates.order_status !== order.order_status
+    ) {
+      changes.push(`Order status changed to ${updates.order_status}`);
+    }
+
+    if (
+      updates.payment_status !== undefined &&
+      updates.payment_status !== order.payment_status
+    ) {
+      changes.push(`Payment status changed to ${updates.payment_status}`);
+    }
+
+    if (
+      updates.delivery_status !== undefined &&
+      updates.delivery_status !== order.delivery_status
+    ) {
+      changes.push(`Delivery status changed to ${updates.delivery_status}`);
+    }
+
+    return changes;
+  }
+
+  // --------------------- Path parameter validation ------------------
+  private parsePositiveInteger(value: string, fieldName: string): number {
+    const parsedValue = Number(value);
+
+    if (!Number.isSafeInteger(parsedValue) || parsedValue <= 0) {
+      throw new BadRequestException(`Invalid ${fieldName}`);
+    }
+
+    return parsedValue;
   }
 }
