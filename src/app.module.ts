@@ -6,6 +6,7 @@ import { CustomerOrderModule } from './customer_order/customer_order.module';
 import { CustomerModule } from './customer/customer.module';
 import { MealModule } from './meal/meal.module';
 import { SubscriptionModule } from './subscription/subscription.module';
+import { NotificationModule } from './notification/notification.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { SubscriptionModule } from './subscription/subscription.module';
     CustomerModule,
     MealModule,
     SubscriptionModule,
+    NotificationModule,
   ],
   controllers: [AppController],
   providers: [AppService],
