@@ -12,7 +12,14 @@ import {
 import { CustomerOrderService } from './customer_order.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdatePrefDeliveryDateDto } from './dto/update-pref-delivery-date.dto';
+import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+
+type AuthenticatedRequest = {
+  user: {
+    customer_id: number;
+  };
+};
 
 @Controller('users/:userId/orders')
 @UseGuards(JwtAuthGuard)
@@ -21,7 +28,7 @@ export class CustomerOrderController {
 
   @Post()
   async create(
-    @Req() req: any,
+    @Req() req: AuthenticatedRequest,
     @Param('userId') userId: string,
     @Body() createOrderDto: CreateOrderDto,
   ) {
@@ -30,14 +37,17 @@ export class CustomerOrderController {
   }
 
   @Get()
-  async findAllByUser(@Req() req: any, @Param('userId') userId: string) {
+  async findAllByUser(
+    @Req() req: AuthenticatedRequest,
+    @Param('userId') userId: string,
+  ) {
     this.assertAuthenticatedUser(req, userId);
     return this.customerOrderService.findAllByUser(userId);
   }
 
   @Get(':orderId')
   async findOneByUser(
-    @Req() req: any,
+    @Req() req: AuthenticatedRequest,
     @Param('userId') userId: string,
     @Param('orderId') orderId: string,
   ) {
@@ -47,7 +57,7 @@ export class CustomerOrderController {
 
   @Patch(':orderId/pref-delivery-date')
   async updatePrefDeliveryDate(
-    @Req() req: any,
+    @Req() req: AuthenticatedRequest,
     @Param('userId') userId: string,
     @Param('orderId') orderId: string,
     @Body() updatePrefDeliveryDateDto: UpdatePrefDeliveryDateDto,
@@ -60,7 +70,23 @@ export class CustomerOrderController {
     );
   }
 
-  private assertAuthenticatedUser(req: any, userId: string) {
+  // ============= Customer Order Status Update =============
+  @Patch(':orderId/status')
+  async updateStatus(
+    @Req() req: AuthenticatedRequest,
+    @Param('userId') userId: string,
+    @Param('orderId') orderId: string,
+    @Body() updateOrderStatusDto: UpdateOrderStatusDto,
+  ) {
+    this.assertAuthenticatedUser(req, userId);
+    return this.customerOrderService.updateStatus(
+      userId,
+      orderId,
+      updateOrderStatusDto,
+    );
+  }
+
+  private assertAuthenticatedUser(req: AuthenticatedRequest, userId: string) {
     if (Number(userId) !== req.user.customer_id) {
       throw new ForbiddenException('You can only access your own orders');
     }

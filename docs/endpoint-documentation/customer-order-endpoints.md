@@ -71,6 +71,7 @@ The customer can update only the preferred delivery date for an existing order.
 - [2. List all orders for a customer](#2-list-all-orders-for-a-customer)
 - [3. Get an order by ID](#3-get-an-order-by-id)
 - [4. Update preferred delivery date](#4-update-preferred-delivery-date)
+- [5. Update order status](#5-update-order-status)
 
 ---
 
@@ -236,6 +237,49 @@ The customer can update only the preferred delivery date for an existing order.
   "delivery_preferred_date": "2026-09-03T10:00:00.000Z",
   "is_a_subscribed_meal": false,
   "offer_id": 5
+}
+```
+
+---
+
+### 5. Update order status
+
+**Endpoint:** `PATCH /users/:userId/orders/:orderId/status`
+
+**Description:** Updates one or more order status fields for an order owned by the authenticated customer. A notification is generated only when at least one provided value differs from the current order status.
+
+**Path Parameters:**
+
+- `userId` (number): The authenticated customer's ID.
+- `orderId` (number): The order ID.
+
+**Body Parameters (JSON):**
+
+- `order_status` (string, optional): Updated order-processing status.
+- `payment_status` (string, optional): Updated payment status.
+- `delivery_status` (string, optional): Updated delivery status.
+
+At least one status field is required.
+
+**Request Body:**
+
+```json
+{
+  "order_status": "confirmed",
+  "payment_status": "paid",
+  "delivery_status": "dispatched"
+}
+```
+
+**Response:**
+
+```json
+{
+  "order_id": 101,
+  "customer_id": 63,
+  "order_status": "confirmed",
+  "payment_status": "paid",
+  "delivery_status": "dispatched"
 }
 ```
 
