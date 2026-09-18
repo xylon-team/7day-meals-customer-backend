@@ -207,6 +207,61 @@
           "response": []
         }
       ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        {
+          "name": "Get Customer Notifications",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/1/notifications",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "1",
+                "notifications"
+              ]
+            },
+            "description": "Retrieve notifications for a customer, newest first. Authentication is not required."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Notification Read Status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"is_read\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/1/notifications/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "1",
+                "notifications",
+                "1"
+              ]
+            },
+            "description": "Mark a customer's notification as read or unread. Authentication is not required."
+          },
+          "response": []
+        }
+      ]
     }
   ],
   "variable": [
