@@ -28,22 +28,24 @@ model complaint {
 }
 
 model customer {
-  customer_id         Int                  @id @default(autoincrement())
-  fname               String
-  lname               String
-  phone_number        String
-  latitude            Decimal?
-  longitude           Decimal?
-  address_line_1      String?
-  address_line_2      String?
-  is_active           Boolean              @default(true)
-  is_deleted          Boolean              @default(false)
-  delete_timestamp    DateTime?
-  registration_date   DateTime             @default(now())
-  complaint           complaint[]
-  customer_credential customer_credential?
-  customer_order      customer_order[]
-  subscription        subscription[]
+  customer_id           Int                  @id @default(autoincrement())
+  fname                 String
+  lname                 String
+  phone_number          String
+  latitude              Decimal?
+  longitude             Decimal?
+  address_line_1        String?
+  address_line_2        String?
+  is_active             Boolean              @default(true)
+  is_deleted            Boolean              @default(false)
+  delete_timestamp      DateTime?
+  registration_date     DateTime             @default(now())
+  is_recovery_requested Boolean              @default(false)
+  complaint             complaint[]
+  customer_credential   customer_credential?
+  customer_order        customer_order[]
+  notification          notification[]
+  subscription          subscription[]
 }
 
 model customer_credential {
@@ -67,10 +69,12 @@ model customer_order {
   delivery_preferred_date DateTime
   is_a_subscribed_meal    Boolean             @default(false)
   offer_id                Int?
+  subscription_id         Int?
   customer                customer            @relation(fields: [customer_id], references: [customer_id])
   delivery_person         delivery_person?    @relation(fields: [delivery_person_id], references: [delivery_person_id])
   meal_plan               meal_plan           @relation(fields: [meal_id], references: [meal_id])
   offer                   offer?              @relation(fields: [offer_id], references: [offer_id])
+  subscription            subscription?       @relation(fields: [subscription_id], references: [subscription_id])
   delivery_feedback       delivery_feedback[]
 }
 
@@ -142,6 +146,20 @@ model meal_plan_food_item {
   meal_plan    meal_plan @relation(fields: [meal_id], references: [meal_id])
 
   @@id([meal_id, food_item_id, day, meal_type])
+}
+
+model notification {
+  notif_id    Int       @id @default(autoincrement())
+  customer_id Int
+  title       String    @db.VarChar(200)
+  message     String
+  type        String
+  created_at  DateTime  @default(now())
+  read_at     DateTime?
+  customer    customer  @relation(fields: [customer_id], references: [customer_id])
+
+  @@index([customer_id, created_at])
+  @@index([customer_id, read_at])
 }
 
 model offer {
@@ -250,14 +268,16 @@ model stock_adjustment {
 }
 
 model subscription {
-  subscription_id         Int       @id @default(autoincrement())
+  subscription_id         Int              @id @default(autoincrement())
   customer_id             Int
   meal_id                 Int
-  subscribe_date          DateTime  @default(now())
+  subscribe_date          DateTime         @default(now())
   canceled_date           DateTime?
   delivery_preferred_date DateTime
-  customer                customer  @relation(fields: [customer_id], references: [customer_id])
-  meal_plan               meal_plan @relation(fields: [meal_id], references: [meal_id])
+  next_delivery_date      DateTime?
+  customer_order          customer_order[]
+  customer                customer         @relation(fields: [customer_id], references: [customer_id])
+  meal_plan               meal_plan        @relation(fields: [meal_id], references: [meal_id])
 }
 
 model supplier {

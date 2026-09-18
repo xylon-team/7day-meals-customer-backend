@@ -5,6 +5,7 @@ import { AppService } from './app.service';
 import { CustomerOrderModule } from './customer_order/customer_order.module';
 import { CustomerModule } from './customer/customer.module';
 import { MealModule } from './meal/meal.module';
+import { SubscriptionModule } from './subscription/subscription.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { MealModule } from './meal/meal.module';
     CustomerOrderModule,
     CustomerModule,
     MealModule,
+    SubscriptionModule,
   ],
   controllers: [AppController],
   providers: [AppService],
