@@ -81,7 +81,7 @@ export class SubscriptionService {
           throw new NotFoundException('Available meal plan not found');
         }
 
-        return transaction.subscription.create({
+        const subscription = await transaction.subscription.create({
           data: {
             customer_id: customerId,
             meal_id: meal.meal_id,
@@ -104,6 +104,18 @@ export class SubscriptionService {
             customer_order: true,
           },
         });
+
+        // --------------------- Subscription creation notification ------------------
+        await transaction.notification.create({
+          data: {
+            customer_id: customerId,
+            title: 'Subscription created',
+            message: `Your meal subscription has been created. Your first delivery is scheduled for ${deliveryPreferredDate.toISOString()}.`,
+            type: 'subscription',
+          },
+        });
+
+        return subscription;
       });
     } catch (error) {
       if (
@@ -150,16 +162,32 @@ export class SubscriptionService {
       deliveryPreferredDate.getTime() + SEVEN_DAYS_IN_MILLISECONDS,
     );
 
-    const result = await this.prisma.subscription.updateMany({
-      where: {
-        subscription_id: parsedSubscriptionId,
-        customer_id: customerId,
-        canceled_date: null,
-      },
-      data: {
-        delivery_preferred_date: deliveryPreferredDate,
-        next_delivery_date: nextDeliveryDate,
-      },
+    const result = await this.prisma.$transaction(async (transaction) => {
+      const updateResult = await transaction.subscription.updateMany({
+        where: {
+          subscription_id: parsedSubscriptionId,
+          customer_id: customerId,
+          canceled_date: null,
+        },
+        data: {
+          delivery_preferred_date: deliveryPreferredDate,
+          next_delivery_date: nextDeliveryDate,
+        },
+      });
+
+      if (updateResult.count > 0) {
+        // --------------------- Delivery schedule update notification ------------------
+        await transaction.notification.create({
+          data: {
+            customer_id: customerId,
+            title: 'Subscription delivery updated',
+            message: `Your subscription delivery date has been updated to ${deliveryPreferredDate.toISOString()}.`,
+            type: 'subscription',
+          },
+        });
+      }
+
+      return updateResult;
     });
 
     if (result.count === 0) {
@@ -190,13 +218,27 @@ export class SubscriptionService {
       'subscription ID',
     );
 
-    await this.prisma.subscription.updateMany({
-      where: {
-        subscription_id: parsedSubscriptionId,
-        customer_id: customerId,
-        canceled_date: null,
-      },
-      data: { canceled_date: new Date() },
+    await this.prisma.$transaction(async (transaction) => {
+      const updateResult = await transaction.subscription.updateMany({
+        where: {
+          subscription_id: parsedSubscriptionId,
+          customer_id: customerId,
+          canceled_date: null,
+        },
+        data: { canceled_date: new Date() },
+      });
+
+      if (updateResult.count > 0) {
+        // --------------------- Subscription cancellation notification ------------------
+        await transaction.notification.create({
+          data: {
+            customer_id: customerId,
+            title: 'Subscription canceled',
+            message: 'Your meal subscription has been canceled.',
+            type: 'subscription',
+          },
+        });
+      }
     });
 
     return this.findOne(userId, subscriptionId);
@@ -295,6 +337,16 @@ export class SubscriptionService {
           delivery_preferred_date: nextDeliveryDate,
           is_a_subscribed_meal: true,
           subscription_id: subscription.subscription_id,
+        },
+      });
+
+      // --------------------- Recurring subscription order notification ------------------
+      await transaction.notification.create({
+        data: {
+          customer_id: subscription.customer_id,
+          title: 'Subscription order created',
+          message: `Your next subscription order has been created for delivery on ${nextDeliveryDate.toISOString()}.`,
+          type: 'subscription',
         },
       });
 
