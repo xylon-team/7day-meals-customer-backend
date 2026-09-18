@@ -37,13 +37,57 @@ Parameters are labeled by location:
 ## Table of Contents
 
 - [1. List customer notifications](#1-list-customer-notifications)
-- [2. Update a notification read status](#2-update-a-notification-read-status)
+- [1. Store a customer notification](#1-store-a-customer-notification)
+- [2. List customer notifications](#2-list-customer-notifications)
+- [3. Update a notification read status](#3-update-a-notification-read-status)
 
 ---
 
 ## Endpoints
 
-### 1. List customer notifications
+### 1. Store a customer notification
+
+**Endpoint:** `POST /users/:userId/notifications`
+
+**Description:** Stores a new notification for the specified customer. New notifications are unread (`read_at` is `null`).
+
+**Path Parameters:**
+
+- `userId` (number): The customer's ID.
+
+**Body Parameters (JSON):**
+
+- `title` (string, required): Notification title, up to 200 characters.
+- `message` (string, required): Notification message.
+- `type` (string, required): Notification category, such as `delivery`, `order`, or `payment`.
+
+**Request Body:**
+
+```json
+{
+  "title": "Order dispatched",
+  "message": "Your order #101 is on its way.",
+  "type": "delivery"
+}
+```
+
+**Response:**
+
+```json
+{
+  "notif_id": 31,
+  "customer_id": 63,
+  "title": "Order dispatched",
+  "message": "Your order #101 is on its way.",
+  "type": "delivery",
+  "created_at": "2026-09-18T09:30:00.000Z",
+  "read_at": null
+}
+```
+
+---
+
+### 2. List customer notifications
 
 **Endpoint:** `GET /users/:userId/notifications`
 
@@ -71,7 +115,7 @@ Parameters are labeled by location:
 
 ---
 
-### 2. Update a notification read status
+### 3. Update a notification read status
 
 **Endpoint:** `PATCH /users/:userId/notifications/:notificationId`
 
@@ -113,4 +157,4 @@ Parameters are labeled by location:
 ## Common Errors
 
 - `400 Bad Request`: Validation failed, including a missing or non-boolean `is_read` value.
-- `404 Not Found`: The notification does not exist for the specified customer.
+- `404 Not Found`: The specified customer or notification does not exist.

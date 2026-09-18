@@ -1,10 +1,33 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { CreateNotificationDto } from './dto/create-notification.dto';
 import { UpdateNotificationReadStatusDto } from './dto/update-notification-read-status.dto';
 
 @Injectable()
 export class NotificationService {
   constructor(private readonly prisma: PrismaService) {}
+
+  // ============= Customer Notification Storage =============
+  async create(userId: string, createNotificationDto: CreateNotificationDto) {
+    const customerId = this.parsePositiveInteger(userId, 'customer ID');
+    const customer = await this.prisma.customer.findUnique({
+      where: { customer_id: customerId },
+      select: { customer_id: true },
+    });
+
+    if (!customer) {
+      throw new NotFoundException('Customer not found');
+    }
+
+    return this.prisma.notification.create({
+      data: {
+        customer_id: customerId,
+        title: createNotificationDto.title,
+        message: createNotificationDto.message,
+        type: createNotificationDto.type,
+      },
+    });
+  }
 
   // ============= Customer Notification Retrieval =============
   async findAllByCustomer(userId: string) {

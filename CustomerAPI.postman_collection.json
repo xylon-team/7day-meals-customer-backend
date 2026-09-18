@@ -212,6 +212,35 @@
       "name": "Notifications",
       "item": [
         {
+          "name": "Create Customer Notification",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"title\": \"Order dispatched\",\n    \"message\": \"Your order #101 is on its way.\",\n    \"type\": \"delivery\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/1/notifications",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "1",
+                "notifications"
+              ]
+            },
+            "description": "Store a new unread notification for a customer. Authentication is not required."
+          },
+          "response": []
+        },
+        {
           "name": "Get Customer Notifications",
           "request": {
             "method": "GET",

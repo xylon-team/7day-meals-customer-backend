@@ -1,10 +1,20 @@
-import { Body, Controller, Get, Param, Patch } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
+import { CreateNotificationDto } from './dto/create-notification.dto';
 import { UpdateNotificationReadStatusDto } from './dto/update-notification-read-status.dto';
 import { NotificationService } from './notification.service';
 
 @Controller('users/:userId/notifications')
 export class NotificationController {
   constructor(private readonly notificationService: NotificationService) {}
+
+  // ============= Customer Notification Storage =============
+  @Post()
+  create(
+    @Param('userId') userId: string,
+    @Body() createNotificationDto: CreateNotificationDto,
+  ) {
+    return this.notificationService.create(userId, createNotificationDto);
+  }
 
   // ============= Customer Notification Retrieval =============
   @Get()

@@ -5,11 +5,15 @@ import { NotificationService } from './notification.service';
 
 describe('NotificationService', () => {
   let service: NotificationService;
+  const customerFindUnique = jest.fn();
+  const notificationCreate = jest.fn();
   const notificationFindMany = jest.fn();
   const notificationUpdateMany = jest.fn();
   const notificationFindFirst = jest.fn();
 
   beforeEach(async () => {
+    customerFindUnique.mockReset();
+    notificationCreate.mockReset();
     notificationFindMany.mockReset();
     notificationUpdateMany.mockReset();
     notificationFindFirst.mockReset();
@@ -20,7 +24,11 @@ describe('NotificationService', () => {
         {
           provide: PrismaService,
           useValue: {
+            customer: {
+              findUnique: customerFindUnique,
+            },
             notification: {
+              create: notificationCreate,
               findMany: notificationFindMany,
               updateMany: notificationUpdateMany,
               findFirst: notificationFindFirst,
@@ -31,6 +39,53 @@ describe('NotificationService', () => {
     }).compile();
 
     service = module.get<NotificationService>(NotificationService);
+  });
+
+  // ============= Customer Notification Storage =============
+  it('stores a new notification as unread for an existing customer', async () => {
+    const notification = {
+      notif_id: 9,
+      customer_id: 7,
+      title: 'Order dispatched',
+      message: 'Your order is on its way.',
+      type: 'delivery',
+      read_at: null,
+    };
+    customerFindUnique.mockResolvedValue({ customer_id: 7 });
+    notificationCreate.mockResolvedValue(notification);
+
+    await expect(
+      service.create('7', {
+        title: notification.title,
+        message: notification.message,
+        type: notification.type,
+      }),
+    ).resolves.toEqual(notification);
+    expect(customerFindUnique).toHaveBeenCalledWith({
+      where: { customer_id: 7 },
+      select: { customer_id: true },
+    });
+    expect(notificationCreate).toHaveBeenCalledWith({
+      data: {
+        customer_id: 7,
+        title: notification.title,
+        message: notification.message,
+        type: notification.type,
+      },
+    });
+  });
+
+  it('does not store a notification for a missing customer', async () => {
+    customerFindUnique.mockResolvedValue(null);
+
+    await expect(
+      service.create('7', {
+        title: 'Order dispatched',
+        message: 'Your order is on its way.',
+        type: 'delivery',
+      }),
+    ).rejects.toThrow(new NotFoundException('Customer not found'));
+    expect(notificationCreate).not.toHaveBeenCalled();
   });
 
   // ============= Customer Notification Retrieval =============
