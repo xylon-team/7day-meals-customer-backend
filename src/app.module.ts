@@ -7,6 +7,7 @@ import { CustomerModule } from './customer/customer.module';
 import { MealModule } from './meal/meal.module';
 import { SubscriptionModule } from './subscription/subscription.module';
 import { NotificationModule } from './notification/notification.module';
+import { ReviewModule } from './review/review.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { NotificationModule } from './notification/notification.module';
     MealModule,
     SubscriptionModule,
     NotificationModule,
+    ReviewModule,
   ],
   controllers: [AppController],
   providers: [AppService],
