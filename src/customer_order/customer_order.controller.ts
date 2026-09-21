@@ -45,6 +45,16 @@ export class CustomerOrderController {
     return this.customerOrderService.findAllByUser(userId);
   }
 
+  // ============= Authenticated Customer Order History =============
+  @Get('history')
+  async findOrderHistory(
+    @Req() req: AuthenticatedRequest,
+    @Param('userId') userId: string,
+  ) {
+    this.assertAuthenticatedUser(req, userId);
+    return this.customerOrderService.findOrderHistory(userId);
+  }
+
   @Get(':orderId')
   async findOneByUser(
     @Req() req: AuthenticatedRequest,

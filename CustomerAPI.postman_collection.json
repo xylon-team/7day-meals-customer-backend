@@ -296,6 +296,32 @@
       "name": "Orders",
       "item": [
         {
+          "name": "Get Authenticated Customer Order History",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users/1/orders/history",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "1",
+                "orders",
+                "history"
+              ]
+            },
+            "description": "Retrieve the authenticated customer's order history, including ordered items, dates, computed totals, delivery details, and order statuses."
+          },
+          "response": []
+        },
+        {
           "name": "Update Order Status",
           "request": {
             "method": "PATCH",
