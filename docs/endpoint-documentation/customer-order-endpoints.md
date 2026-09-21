@@ -69,9 +69,10 @@ The customer can update only the preferred delivery date for an existing order.
 
 - [1. Create an order](#1-create-an-order)
 - [2. List all orders for a customer](#2-list-all-orders-for-a-customer)
-- [3. Get an order by ID](#3-get-an-order-by-id)
-- [4. Update preferred delivery date](#4-update-preferred-delivery-date)
-- [5. Update order status](#5-update-order-status)
+- [3. Get authenticated customer order history](#3-get-authenticated-customer-order-history)
+- [4. Get an order by ID](#4-get-an-order-by-id)
+- [5. Update preferred delivery date](#5-update-preferred-delivery-date)
+- [6. Update order status](#6-update-order-status)
 
 ---
 
@@ -168,7 +169,68 @@ The customer can update only the preferred delivery date for an existing order.
 
 ---
 
-### 3. Get an order by ID
+### 3. Get authenticated customer order history
+
+**Endpoint:** `GET /users/:userId/orders/history`
+
+**Description:** Returns the authenticated customer's complete order history, newest order first. Each order includes ordered food items, order and delivery dates, computed totals, delivery details, statuses, and any feedback. The URL `userId` must match the customer ID in the JWT.
+
+**Path Parameters:**
+
+- `userId` (number): The authenticated customer's ID.
+
+**Response:**
+
+```json
+[
+  {
+    "order_id": 101,
+    "order_date": "2026-08-27T18:40:00.000Z",
+    "subscription_id": null,
+    "is_a_subscribed_meal": false,
+    "ordered_items": [
+      {
+        "food_item_id": 14,
+        "item_name": "Vegetable Curry",
+        "ingredient_list": "Vegetables, spices",
+        "image_path": "/foods/vegetable-curry.jpg",
+        "price": 600,
+        "day": "Monday",
+        "meal_type": "Lunch"
+      }
+    ],
+    "meal_plan": {
+      "meal_id": 1,
+      "item_name": "Balanced Lunch Plan",
+      "category": "Lunch",
+      "dietary_preference": "Vegetarian",
+      "image_path": "/meals/balanced-lunch.jpg"
+    },
+    "totals": {
+      "subtotal": 1200,
+      "discount_amount": 0,
+      "delivery_fee": null,
+      "total_amount": 1200
+    },
+    "delivery": {
+      "preferred_date": "2026-09-01T10:00:00.000Z",
+      "status": "delivered",
+      "delivery_person": null
+    },
+    "status": {
+      "order_status": "delivered",
+      "payment_status": "paid",
+      "delivery_status": "delivered"
+    },
+    "offer": null,
+    "delivery_feedback": []
+  }
+]
+```
+
+---
+
+### 4. Get an order by ID
 
 **Endpoint:** `GET /users/:userId/orders/:orderId`
 
@@ -199,7 +261,7 @@ The customer can update only the preferred delivery date for an existing order.
 
 ---
 
-### 4. Update preferred delivery date
+### 5. Update preferred delivery date
 
 **Endpoint:** `PATCH /users/:userId/orders/:orderId/pref-delivery-date`
 
@@ -242,7 +304,7 @@ The customer can update only the preferred delivery date for an existing order.
 
 ---
 
-### 5. Update order status
+### 6. Update order status
 
 **Endpoint:** `PATCH /users/:userId/orders/:orderId/status`
 

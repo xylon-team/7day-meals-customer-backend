@@ -66,6 +66,115 @@ export class CustomerOrderService {
     }
   }
 
+  // ============= Authenticated Customer Order History =============
+  async findOrderHistory(userId: string) {
+    const customerId = this.parsePositiveInteger(userId, 'customer ID');
+
+    const orders = await this.prisma.customer_order.findMany({
+      where: { customer_id: customerId },
+      orderBy: { order_timestamp: 'desc' },
+      include: {
+        meal_plan: {
+          select: {
+            meal_id: true,
+            item_name: true,
+            category: true,
+            dietary_preference: true,
+            price: true,
+            image_path: true,
+            meal_plan_food_item: {
+              select: {
+                day: true,
+                meal_type: true,
+                food_item: {
+                  select: {
+                    food_item_id: true,
+                    item_name: true,
+                    ingredient_list: true,
+                    image_path: true,
+                    price: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+        offer: {
+          select: {
+            offer_id: true,
+            coupon_number: true,
+            title: true,
+            amount: true,
+          },
+        },
+        delivery_person: {
+          select: {
+            delivery_person_id: true,
+            rider_name: true,
+            phone_number: true,
+          },
+        },
+        delivery_feedback: {
+          select: {
+            feedback_id: true,
+            rating_value: true,
+            description: true,
+            image_path: true,
+            reply: true,
+            replied_date: true,
+          },
+        },
+      },
+    });
+
+    // --------------------- Customer order history response ------------------
+    return orders.map((order) => {
+      const subtotal = Number(order.meal_plan.price);
+      const discountAmount = Number(order.offer?.amount ?? 0);
+
+      return {
+        order_id: order.order_id,
+        order_date: order.order_timestamp,
+        subscription_id: order.subscription_id,
+        is_a_subscribed_meal: order.is_a_subscribed_meal,
+        ordered_items: order.meal_plan.meal_plan_food_item.map((item) => ({
+          food_item_id: item.food_item.food_item_id,
+          item_name: item.food_item.item_name,
+          ingredient_list: item.food_item.ingredient_list,
+          image_path: item.food_item.image_path,
+          price: Number(item.food_item.price),
+          day: item.day,
+          meal_type: item.meal_type,
+        })),
+        meal_plan: {
+          meal_id: order.meal_plan.meal_id,
+          item_name: order.meal_plan.item_name,
+          category: order.meal_plan.category,
+          dietary_preference: order.meal_plan.dietary_preference,
+          image_path: order.meal_plan.image_path,
+        },
+        totals: {
+          subtotal,
+          discount_amount: discountAmount,
+          delivery_fee: null,
+          total_amount: Math.max(0, subtotal - discountAmount),
+        },
+        delivery: {
+          preferred_date: order.delivery_preferred_date,
+          status: order.delivery_status,
+          delivery_person: order.delivery_person,
+        },
+        status: {
+          order_status: order.order_status,
+          payment_status: order.payment_status,
+          delivery_status: order.delivery_status,
+        },
+        offer: order.offer,
+        delivery_feedback: order.delivery_feedback,
+      };
+    });
+  }
+
   async findOneByUser(userId: string, orderId: string) {
     try {
       const order = await this.prisma.customer_order.findFirst({
