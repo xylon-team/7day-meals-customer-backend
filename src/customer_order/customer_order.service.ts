@@ -66,6 +66,53 @@ export class CustomerOrderService {
     }
   }
 
+  // ============= Authenticated Customer Order History =============
+  async findOrderHistory(userId: string) {
+    const customerId = this.parsePositiveInteger(userId, 'customer ID');
+
+    return this.prisma.customer_order.findMany({
+      where: { customer_id: customerId },
+      orderBy: { order_timestamp: 'desc' },
+      include: {
+        meal_plan: {
+          select: {
+            meal_id: true,
+            item_name: true,
+            category: true,
+            dietary_preference: true,
+            price: true,
+            image_path: true,
+          },
+        },
+        offer: {
+          select: {
+            offer_id: true,
+            coupon_number: true,
+            title: true,
+            amount: true,
+          },
+        },
+        delivery_person: {
+          select: {
+            delivery_person_id: true,
+            rider_name: true,
+            phone_number: true,
+          },
+        },
+        delivery_feedback: {
+          select: {
+            feedback_id: true,
+            rating_value: true,
+            description: true,
+            image_path: true,
+            reply: true,
+            replied_date: true,
+          },
+        },
+      },
+    });
+  }
+
   async findOneByUser(userId: string, orderId: string) {
     try {
       const order = await this.prisma.customer_order.findFirst({

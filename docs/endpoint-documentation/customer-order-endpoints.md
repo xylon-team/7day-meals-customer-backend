@@ -69,9 +69,10 @@ The customer can update only the preferred delivery date for an existing order.
 
 - [1. Create an order](#1-create-an-order)
 - [2. List all orders for a customer](#2-list-all-orders-for-a-customer)
-- [3. Get an order by ID](#3-get-an-order-by-id)
-- [4. Update preferred delivery date](#4-update-preferred-delivery-date)
-- [5. Update order status](#5-update-order-status)
+- [3. Get authenticated customer order history](#3-get-authenticated-customer-order-history)
+- [4. Get an order by ID](#4-get-an-order-by-id)
+- [5. Update preferred delivery date](#5-update-preferred-delivery-date)
+- [6. Update order status](#6-update-order-status)
 
 ---
 
@@ -168,7 +169,47 @@ The customer can update only the preferred delivery date for an existing order.
 
 ---
 
-### 3. Get an order by ID
+### 3. Get authenticated customer order history
+
+**Endpoint:** `GET /users/:userId/orders/history`
+
+**Description:** Returns the authenticated customer's complete order history, newest order first. Each order includes its meal-plan details and, when available, its applied offer, assigned delivery person, and delivery feedback. The URL `userId` must match the customer ID in the JWT.
+
+**Path Parameters:**
+
+- `userId` (number): The authenticated customer's ID.
+
+**Response:**
+
+```json
+[
+  {
+    "order_id": 101,
+    "customer_id": 63,
+    "meal_id": 1,
+    "order_timestamp": "2026-08-27T18:40:00.000Z",
+    "order_status": "delivered",
+    "payment_status": "paid",
+    "delivery_status": "delivered",
+    "delivery_preferred_date": "2026-09-01T10:00:00.000Z",
+    "meal_plan": {
+      "meal_id": 1,
+      "item_name": "Balanced Lunch Plan",
+      "category": "Lunch",
+      "dietary_preference": "Vegetarian",
+      "price": "1200",
+      "image_path": "/meals/balanced-lunch.jpg"
+    },
+    "offer": null,
+    "delivery_person": null,
+    "delivery_feedback": []
+  }
+]
+```
+
+---
+
+### 4. Get an order by ID
 
 **Endpoint:** `GET /users/:userId/orders/:orderId`
 
@@ -199,7 +240,7 @@ The customer can update only the preferred delivery date for an existing order.
 
 ---
 
-### 4. Update preferred delivery date
+### 5. Update preferred delivery date
 
 **Endpoint:** `PATCH /users/:userId/orders/:orderId/pref-delivery-date`
 
@@ -242,7 +283,7 @@ The customer can update only the preferred delivery date for an existing order.
 
 ---
 
-### 5. Update order status
+### 6. Update order status
 
 **Endpoint:** `PATCH /users/:userId/orders/:orderId/status`
 
