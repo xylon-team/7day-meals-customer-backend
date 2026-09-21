@@ -173,7 +173,7 @@ The customer can update only the preferred delivery date for an existing order.
 
 **Endpoint:** `GET /users/:userId/orders/history`
 
-**Description:** Returns the authenticated customer's complete order history, newest order first. Each order includes its meal-plan details and, when available, its applied offer, assigned delivery person, and delivery feedback. The URL `userId` must match the customer ID in the JWT.
+**Description:** Returns the authenticated customer's complete order history, newest order first. Each order includes ordered food items, order and delivery dates, computed totals, delivery details, statuses, and any feedback. The URL `userId` must match the customer ID in the JWT.
 
 **Path Parameters:**
 
@@ -185,23 +185,44 @@ The customer can update only the preferred delivery date for an existing order.
 [
   {
     "order_id": 101,
-    "customer_id": 63,
-    "meal_id": 1,
-    "order_timestamp": "2026-08-27T18:40:00.000Z",
-    "order_status": "delivered",
-    "payment_status": "paid",
-    "delivery_status": "delivered",
-    "delivery_preferred_date": "2026-09-01T10:00:00.000Z",
+    "order_date": "2026-08-27T18:40:00.000Z",
+    "subscription_id": null,
+    "is_a_subscribed_meal": false,
+    "ordered_items": [
+      {
+        "food_item_id": 14,
+        "item_name": "Vegetable Curry",
+        "ingredient_list": "Vegetables, spices",
+        "image_path": "/foods/vegetable-curry.jpg",
+        "price": 600,
+        "day": "Monday",
+        "meal_type": "Lunch"
+      }
+    ],
     "meal_plan": {
       "meal_id": 1,
       "item_name": "Balanced Lunch Plan",
       "category": "Lunch",
       "dietary_preference": "Vegetarian",
-      "price": "1200",
       "image_path": "/meals/balanced-lunch.jpg"
     },
+    "totals": {
+      "subtotal": 1200,
+      "discount_amount": 0,
+      "delivery_fee": null,
+      "total_amount": 1200
+    },
+    "delivery": {
+      "preferred_date": "2026-09-01T10:00:00.000Z",
+      "status": "delivered",
+      "delivery_person": null
+    },
+    "status": {
+      "order_status": "delivered",
+      "payment_status": "paid",
+      "delivery_status": "delivered"
+    },
     "offer": null,
-    "delivery_person": null,
     "delivery_feedback": []
   }
 ]
