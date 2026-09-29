@@ -34,10 +34,23 @@ export class JwtAuthGuard implements CanActivate {
 
     const credential = await this.prisma.customer_credential.findUnique({
       where: { customer_id: payload.customer_id },
-      select: { token_version: true },
+      select: {
+        token_version: true,
+        customer: {
+          select: {
+            is_active: true,
+            is_deleted: true,
+          },
+        },
+      },
     });
 
-    if (!credential || credential.token_version !== payload.token_version) {
+    if (
+      !credential ||
+      credential.token_version !== payload.token_version ||
+      !credential.customer.is_active ||
+      credential.customer.is_deleted
+    ) {
       throw new UnauthorizedException('Token has been invalidated');
     }
 
