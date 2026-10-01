@@ -106,6 +106,15 @@ model food_item {
   meal_plan_food_item meal_plan_food_item[]
 }
 
+// ============= Existing Guest Inquiry Storage =============
+model inquiry {
+  inquiry_id     Int      @id @default(autoincrement())
+  title          String   @db.VarChar(200)
+  message        String
+  sender_email   String   @db.VarChar(254)
+  date_submitted DateTime @default(now()) @db.Timestamp(3)
+}
+
 model inventory_item {
   inventory_id            Int                       @id @default(autoincrement())
   ingredient_name         String
