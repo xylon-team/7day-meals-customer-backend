@@ -49,6 +49,29 @@ Create a `.env` file in the project root with the following variables:
 
 For local development, [Mailtrap](https://mailtrap.io) is a convenient way to capture reset emails without sending real mail.
 
+## Guest contact inquiries
+
+`POST /inquiries` is public and does not require authentication.
+
+```json
+{
+  "title": "Delivery area",
+  "message": "Do you deliver to Colombo?",
+  "sender_email": "guest@example.com"
+}
+```
+
+All three fields are required strings and are trimmed before validation. Title
+must be nonblank and at most 200 characters, message must be nonblank and at most
+5000 characters, and sender_email must be a valid email of at most 254 characters.
+Unknown fields are stripped. A successful submission returns HTTP 201 with the
+stored inquiry, including the database-generated inquiry_id and date_submitted.
+Invalid input returns HTTP 400; a storage failure returns HTTP 500.
+
+The `inquiry` table already exists and is managed by another service. The Prisma
+model maps that existing table; no database migration is needed for this change.
+Run `npx prisma generate` before building to update the local Prisma Client.
+
 ## Compile and run the project
 
 ```bash

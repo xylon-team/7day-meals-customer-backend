@@ -8,6 +8,7 @@ import { MealModule } from './meal/meal.module';
 import { SubscriptionModule } from './subscription/subscription.module';
 import { NotificationModule } from './notification/notification.module';
 import { ReviewModule } from './review/review.module';
+import { InquiryModule } from './inquiry/inquiry.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { ReviewModule } from './review/review.module';
     SubscriptionModule,
     NotificationModule,
     ReviewModule,
+    InquiryModule,
   ],
   controllers: [AppController],
   providers: [AppService],
